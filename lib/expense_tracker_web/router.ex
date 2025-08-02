@@ -19,6 +19,7 @@ defmodule ExpenseTrackerWeb.Router do
 
     live "/", CategoryLive.Index, :index
     live "/new", CategoryLive.Index, :new
+    live "/categories/:id", CategoryLive.Show, :show
   end
 
   # Other scopes may use custom stacks.

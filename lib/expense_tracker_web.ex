@@ -85,6 +85,9 @@ defmodule ExpenseTrackerWeb do
       # Core UI components
       import ExpenseTrackerWeb.CoreComponents
 
+      # Currency formatting
+      import ExpenseTrackerWeb.Format.Currency
+
       # Shortcut for generating JS commands
       alias Phoenix.LiveView.JS
 

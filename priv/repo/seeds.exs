@@ -10,6 +10,9 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
+ExpenseTracker.Repo.delete_all(ExpenseTracker.Categories.ExpenseCategory)
+ExpenseTracker.Repo.delete_all(ExpenseTracker.Categories.Expense)
+
 ExpenseTracker.Categories.create_expense_category(%{
   "name" => "Food",
   "description" => "High quality food and drinks are the core of a good life",
@@ -39,4 +42,17 @@ ExpenseTracker.Expenses.create_expense(category.id, %{
   "base_amount" => 10_000,
   "date" => ~D[2025-08-02],
   "notes" => "ElixirMentor's awesome course"
+})
+
+{:ok, category} =
+  ExpenseTracker.Categories.create_expense_category(%{
+    "name" => "DIY Job Postings",
+    "description" => "To hire the best Elixir talent",
+    "monthly_budget" => 9900
+  })
+
+ExpenseTracker.Expenses.create_expense(category.id, %{
+  "base_amount" => 9800,
+  "date" => ~D[2025-08-01],
+  "notes" => "Looking for a great Elixir developer to join my startup"
 })

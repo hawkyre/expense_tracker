@@ -104,16 +104,21 @@ defmodule ExpenseTrackerWeb.CategoryLive.Index do
             <div class="flex items-center gap-2">
               <span class="text-sm font-medium text-gray-700">Monthly Budget:</span>
               <span class="text-sm font-bold text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
-                {category.monthly_budget_currency} {:erlang.float_to_binary(
-                  category.monthly_budget / 100,
-                  decimals: 2
-                )}
+                {format_currency(category.monthly_budget, category.monthly_budget_currency)}
               </span>
             </div>
           </div>
 
-          <div class="mt-4 text-xs text-gray-500">
-            Created {Calendar.strftime(category.inserted_at, "%B %d, %Y")}
+          <div class="mt-4 flex items-center justify-between">
+            <div class="text-xs text-gray-500">
+              Created {Calendar.strftime(category.inserted_at, "%B %d, %Y")}
+            </div>
+            <.link
+              navigate={~p"/categories/#{category.id}"}
+              class="px-3 py-1.5 font-medium rounded-md hover:bg-gray-200 transition-colors"
+            >
+              View Details
+            </.link>
           </div>
         </div>
       </div>
