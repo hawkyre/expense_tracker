@@ -17,7 +17,7 @@ defmodule ExpenseTrackerWeb.Router do
   scope "/", ExpenseTrackerWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", CategoryLive.Index, :index
   end
 
   # Other scopes may use custom stacks.
