@@ -59,8 +59,7 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
   end
 
   defp calculate_budget_percentage(total_expenses, budget) when budget > 0 do
-    percentage = total_expenses / budget * 100
-    min(percentage, 100)
+    total_expenses / budget * 100
   end
 
   defp calculate_budget_percentage(_total_expenses, _budget), do: 0
@@ -232,7 +231,7 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
                 Approaching Budget Limit
               </h3>
               <p class="text-sm text-yellow-700">
-                You've used {Float.round(@budget_percentage, 1)}% of your monthly budget. Consider monitoring your spending.
+                You've used {Float.round(@budget_percentage, 2)}% of your monthly budget. Consider monitoring your spending.
               </p>
             </div>
           </div>
