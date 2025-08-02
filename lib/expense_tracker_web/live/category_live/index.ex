@@ -1,5 +1,4 @@
 defmodule ExpenseTrackerWeb.CategoryLive.Index do
-  alias ExpenseTracker.Categories.ExpenseCategory
   use ExpenseTrackerWeb, :live_view
 
   alias ExpenseTracker.Categories

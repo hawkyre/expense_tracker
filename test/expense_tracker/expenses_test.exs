@@ -19,37 +19,37 @@ defmodule ExpenseTracker.ExpensesTest do
     test "creates a new expense for a category", %{category: category} do
       attrs = %{
         "base_amount" => 1500,
-        "date" => ~D[2025-01-01],
+        "date" => Date.utc_today(),
         "notes" => "Test expense"
       }
 
-      assert {:ok, %Expense{} = expense} = Expenses.create_expense(category.id, attrs)
-      assert expense.category_id == category.id
+      assert {:ok, %Expense{category_id: ^category.id}} =
+               Expenses.create_expense(category.id, attrs)
     end
 
     test "creates a new expense without optional notes", %{category: category} do
       attrs = %{
         "base_amount" => 1500,
-        "date" => ~D[2025-01-01]
+        "date" => Date.utc_today()
       }
 
-      assert {:ok, %Expense{} = expense} = Expenses.create_expense(category.id, attrs)
-      assert expense.notes == nil
+      assert {:ok, %Expense{notes: nil}} = Expenses.create_expense(category.id, attrs)
     end
 
     test "returns error with invalid expense data", %{category: category} do
       attrs = %{
         "base_amount" => -1500,
-        "date" => ~D[2025-01-01]
+        "date" => Date.utc_today()
       }
 
-      assert {:error, %Ecto.Changeset{}} = Expenses.create_expense(category.id, attrs)
+      assert {:error, %Ecto.Changeset{errors: [base_amount: _]}} =
+               Expenses.create_expense(category.id, attrs)
     end
 
     test "cannot exceed category monthly budget with a single expense", %{category: category} do
       attrs = %{
         "base_amount" => 100_001,
-        "date" => ~D[2025-01-01]
+        "date" => Date.utc_today()
       }
 
       assert {:error, "Monthly budget exceeded"} = Expenses.create_expense(category.id, attrs)
@@ -58,14 +58,14 @@ defmodule ExpenseTracker.ExpensesTest do
     test "cannot exceed category monthly budget with multiple expenses", %{category: category} do
       attrs = %{
         "base_amount" => 60_000,
-        "date" => ~D[2025-01-01]
+        "date" => Date.utc_today()
       }
 
-      assert {:ok, %Expense{} = expense} = Expenses.create_expense(category.id, attrs)
+      assert {:ok, %Expense{}} = Expenses.create_expense(category.id, attrs)
 
       attrs = %{
         "base_amount" => 60_000,
-        "date" => ~D[2025-01-02]
+        "date" => Date.utc_today()
       }
 
       assert {:error, "Monthly budget exceeded"} = Expenses.create_expense(category.id, attrs)
@@ -74,17 +74,17 @@ defmodule ExpenseTracker.ExpensesTest do
     test "expenses across months do not affect the monthly budget", %{category: category} do
       attrs = %{
         "base_amount" => 60_000,
-        "date" => ~D[2025-01-01]
+        "date" => Date.utc_today()
       }
 
-      assert {:ok, %Expense{} = expense} = Expenses.create_expense(category.id, attrs)
+      assert {:ok, %Expense{}} = Expenses.create_expense(category.id, attrs)
 
       attrs = %{
         "base_amount" => 60_000,
-        "date" => ~D[2025-02-01]
+        "date" => Date.utc_today() |> Date.add(32)
       }
 
-      assert {:ok, %Expense{} = expense} = Expenses.create_expense(category.id, attrs)
+      assert {:ok, %Expense{}} = Expenses.create_expense(category.id, attrs)
     end
   end
 end

@@ -2,7 +2,6 @@ defmodule ExpenseTracker.CategoriesTest do
   use ExpenseTracker.DataCase
 
   alias ExpenseTracker.Categories
-  alias ExpenseTracker.Categories.Expense
   alias ExpenseTracker.Categories.ExpenseCategory
   alias ExpenseTracker.Expenses
 
@@ -48,48 +47,50 @@ defmodule ExpenseTracker.CategoriesTest do
     end
 
     test "returns category with recent expenses and total sum", %{category: category} do
+      beginning_of_month = Date.beginning_of_month(Date.utc_today())
+
       # Create 7 expenses with different dates
       expense_attrs = [
         %{
           "currency" => "USD",
           "base_amount" => 1000,
-          "date" => ~D[2025-08-01],
+          "date" => beginning_of_month,
           "notes" => "Expense 1"
         },
         %{
           "currency" => "USD",
           "base_amount" => 2000,
-          "date" => ~D[2025-08-02],
+          "date" => beginning_of_month |> Date.add(1),
           "notes" => "Expense 2"
         },
         %{
           "currency" => "USD",
           "base_amount" => 1500,
-          "date" => ~D[2025-08-03],
+          "date" => beginning_of_month |> Date.add(2),
           "notes" => "Expense 3"
         },
         %{
           "currency" => "USD",
           "base_amount" => 3000,
-          "date" => ~D[2025-08-04],
+          "date" => beginning_of_month |> Date.add(3),
           "notes" => "Expense 4"
         },
         %{
           "currency" => "USD",
           "base_amount" => 2500,
-          "date" => ~D[2025-08-05],
+          "date" => beginning_of_month |> Date.add(4),
           "notes" => "Expense 5"
         },
         %{
           "currency" => "USD",
           "base_amount" => 1800,
-          "date" => ~D[2025-08-06],
+          "date" => beginning_of_month |> Date.add(5),
           "notes" => "Expense 6"
         },
         %{
           "currency" => "USD",
           "base_amount" => 2200,
-          "date" => ~D[2025-08-07],
+          "date" => beginning_of_month |> Date.add(6),
           "notes" => "Expense 7"
         }
       ]
@@ -109,11 +110,11 @@ defmodule ExpenseTracker.CategoriesTest do
       expense_dates = Enum.map(result.recent_expenses, & &1.date)
 
       assert expense_dates == [
-               ~D[2025-08-07],
-               ~D[2025-08-06],
-               ~D[2025-08-05],
-               ~D[2025-08-04],
-               ~D[2025-08-03]
+               beginning_of_month |> Date.add(6),
+               beginning_of_month |> Date.add(5),
+               beginning_of_month |> Date.add(4),
+               beginning_of_month |> Date.add(3),
+               beginning_of_month |> Date.add(2)
              ]
 
       # Should return total sum of all expenses (not just the 5 most recent)
@@ -122,24 +123,25 @@ defmodule ExpenseTracker.CategoriesTest do
     end
 
     test "handles expenses across months correctly", %{category: category} do
+      beginning_of_month = Date.beginning_of_month(Date.utc_today())
       # Create only 3 expenses
       expense_attrs = [
         %{
           "currency" => "USD",
           "base_amount" => 1000,
-          "date" => ~D[2025-08-01],
+          "date" => beginning_of_month,
           "notes" => "Expense 1"
         },
         %{
           "currency" => "USD",
           "base_amount" => 2000,
-          "date" => ~D[2025-08-02],
+          "date" => beginning_of_month |> Date.add(1),
           "notes" => "Expense 2"
         },
         %{
           "currency" => "USD",
           "base_amount" => 1500,
-          "date" => ~D[2025-07-03],
+          "date" => beginning_of_month |> Date.add(-1),
           "notes" => "Expense 3"
         }
       ]

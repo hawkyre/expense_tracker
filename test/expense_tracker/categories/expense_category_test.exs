@@ -23,5 +23,12 @@ defmodule ExpenseTracker.Categories.ExpenseCategoryTest do
       assert %Ecto.Changeset{errors: [monthly_budget: _]} =
                ExpenseCategory.create_changeset(%{attrs | monthly_budget: 0})
     end
+
+    test "budget cannot be over $100,000" do
+      attrs = %{name: "Test Category", monthly_budget: 100_000_001}
+
+      assert %Ecto.Changeset{errors: [monthly_budget: _]} =
+               ExpenseCategory.create_changeset(attrs)
+    end
   end
 end

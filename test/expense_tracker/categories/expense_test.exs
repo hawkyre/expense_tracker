@@ -9,7 +9,7 @@ defmodule ExpenseTracker.Categories.ExpenseTest do
         category_id: 1,
         currency: "USD",
         base_amount: 1500,
-        date: ~D[2025-01-01],
+        date: Date.utc_today(),
         notes: "Test expense"
       }
 
@@ -21,7 +21,7 @@ defmodule ExpenseTracker.Categories.ExpenseTest do
         category_id: 1,
         currency: "USD",
         base_amount: 1500,
-        date: ~D[2025-01-01]
+        date: Date.utc_today()
       }
 
       assert %Ecto.Changeset{valid?: true} = Expense.create_changeset(attrs)
@@ -31,7 +31,7 @@ defmodule ExpenseTracker.Categories.ExpenseTest do
       attrs = %{
         currency: "USD",
         base_amount: 1500,
-        date: ~D[2025-01-01]
+        date: Date.utc_today()
       }
 
       assert %Ecto.Changeset{errors: [category_id: _]} = Expense.create_changeset(attrs)
@@ -41,7 +41,7 @@ defmodule ExpenseTracker.Categories.ExpenseTest do
       attrs = %{
         category_id: 1,
         currency: "USD",
-        date: ~D[2025-01-01]
+        date: Date.utc_today()
       }
 
       assert %Ecto.Changeset{errors: [base_amount: _]} = Expense.create_changeset(attrs)
@@ -62,7 +62,7 @@ defmodule ExpenseTracker.Categories.ExpenseTest do
         category_id: 1,
         currency: "USD",
         base_amount: 0,
-        date: ~D[2025-01-01]
+        date: Date.utc_today()
       }
 
       assert %Ecto.Changeset{errors: [base_amount: _]} = Expense.create_changeset(attrs)
@@ -78,7 +78,7 @@ defmodule ExpenseTracker.Categories.ExpenseTest do
         category_id: 1,
         currency: "USD",
         base_amount: 1500,
-        date: ~D[2025-01-01],
+        date: Date.utc_today(),
         notes: long_notes
       }
 

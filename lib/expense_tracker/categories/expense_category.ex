@@ -1,4 +1,8 @@
 defmodule ExpenseTracker.Categories.ExpenseCategory do
+  @moduledoc """
+  Schema for an expense category.
+  """
+
   use Ecto.Schema
   use TypedEctoSchema
 

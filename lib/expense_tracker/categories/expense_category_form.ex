@@ -1,4 +1,10 @@
 defmodule ExpenseTracker.Categories.ExpenseCategoryForm do
+  @moduledoc """
+  Form for creating an expense category.
+
+  The user validates against this form, and then we convert it to the expense category params.
+  """
+
   use Ecto.Schema
   use TypedEctoSchema
 

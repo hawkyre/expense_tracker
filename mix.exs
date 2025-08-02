@@ -56,7 +56,9 @@ defmodule ExpenseTracker.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
       {:typed_ecto_schema, "~> 0.4.3", runtime: false},
-      {:decimal, "~> 2.3"}
+      {:decimal, "~> 2.3"},
+      {:lazy_html, ">= 0.1.0", only: :test},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 
