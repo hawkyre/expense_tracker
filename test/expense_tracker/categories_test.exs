@@ -13,7 +13,10 @@ defmodule ExpenseTracker.CategoriesTest do
   describe "create_expense_category/1" do
     test "creates a new expense category" do
       assert {:ok, %ExpenseCategory{}} =
-               Categories.create_expense_category(%{name: "Test Category", monthly_budget: 1000})
+               Categories.create_expense_category(%{
+                 name: "Test Category",
+                 monthly_budget: "1000"
+               })
     end
   end
 end
