@@ -57,8 +57,8 @@ defmodule ExpenseTracker.Categories.ExpenseCategoryForm do
     end
   end
 
-  defp validate_budget(changeset, budget_float) when budget_float < 0 do
-    add_error(changeset, :monthly_budget_input, "Monthly budget must be greater than $0")
+  defp validate_budget(changeset, budget_float) when budget_float < 0.01 do
+    add_error(changeset, :monthly_budget_input, "Monthly budget must be at least $0.01")
   end
 
   defp validate_budget(changeset, budget_float) when budget_float > 100_000 do

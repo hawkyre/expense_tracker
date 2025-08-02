@@ -20,12 +20,8 @@ defmodule ExpenseTrackerWeb.Router do
     live "/", CategoryLive.Index, :index
     live "/new", CategoryLive.Index, :new
     live "/categories/:id", CategoryLive.Show, :show
+    live "/categories/:id/new_expense", CategoryLive.Show, :new_expense
   end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", ExpenseTrackerWeb do
-  #   pipe_through :api
-  # end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:expense_tracker, :dev_routes) do

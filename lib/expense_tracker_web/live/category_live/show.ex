@@ -2,6 +2,8 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
   use ExpenseTrackerWeb, :live_view
 
   alias ExpenseTracker.Categories
+  alias ExpenseTracker.Categories.ExpenseForm
+  alias ExpenseTracker.Expenses
 
   @impl true
   def mount(%{"id" => category_id}, _session, socket) do
@@ -24,14 +26,36 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
           |> assign(:category_data, category_data)
           |> assign(:budget_percentage, budget_percentage)
           |> assign(:page_title, category_data.category.name)
+          |> assign(:expense, nil)
+          |> assign(:changeset, nil)
 
         {:ok, socket}
     end
   end
 
   @impl true
-  def handle_params(_params, _url, socket) do
-    {:noreply, socket}
+  def handle_params(params, _url, socket) do
+    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
+  end
+
+  defp apply_action(socket, :show, _params) do
+    socket
+    |> assign(:expense, nil)
+    |> assign(:changeset, nil)
+  end
+
+  defp apply_action(socket, :new_expense, _params) do
+    category_id = socket.assigns.category_data.category.id
+
+    changeset =
+      ExpenseForm.create_changeset(%{
+        "category_id" => category_id,
+        "date" => Date.utc_today()
+      })
+
+    socket
+    |> assign(:expense, %ExpenseForm{category_id: category_id})
+    |> assign(:changeset, changeset)
   end
 
   defp calculate_budget_percentage(total_expenses, budget) when budget > 0 do
@@ -48,6 +72,79 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
       percentage >= 50 -> "bg-orange-500"
       true -> "bg-green-500"
     end
+  end
+
+  @impl true
+  def handle_event("new_expense", _, socket) do
+    category_id = socket.assigns.category_data.category.id
+    {:noreply, push_patch(socket, to: ~p"/categories/#{category_id}/new_expense")}
+  end
+
+  @impl true
+  def handle_event("close_modal", _, socket) do
+    category_id = socket.assigns.category_data.category.id
+    {:noreply, push_patch(socket, to: ~p"/categories/#{category_id}")}
+  end
+
+  @impl true
+  def handle_event("save", %{"expense_form" => expense_params}, socket) do
+    category_id = socket.assigns.category_data.category.id
+
+    case expense_params
+         |> ExpenseForm.to_expense_params()
+         |> then(fn params -> Expenses.create_expense(category_id, params) end) do
+      {:ok, _expense} ->
+        # Refresh the category data to show the new expense
+        case Categories.get_category_with_expenses(category_id) do
+          nil ->
+            socket
+            |> put_flash(:error, "Category not found")
+            |> push_navigate(to: ~p"/")
+            |> then(&{:noreply, &1})
+
+          category_data ->
+            budget_percentage =
+              calculate_budget_percentage(
+                category_data.total_expenses_current_month,
+                category_data.category.monthly_budget
+              )
+
+            socket
+            |> put_flash(:info, "Expense created successfully")
+            |> assign(:category_data, category_data)
+            |> assign(:budget_percentage, budget_percentage)
+            |> push_patch(to: ~p"/categories/#{category_id}")
+            |> then(&{:noreply, &1})
+        end
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :changeset, changeset)}
+
+      {:error, message} when is_binary(message) ->
+        socket
+        |> put_flash(:error, message)
+        |> then(&{:noreply, &1})
+    end
+  end
+
+  @impl true
+  def handle_event("validate", %{"expense_form" => expense_params}, socket) do
+    category_id = socket.assigns.category_data.category.id
+    expense_params_with_category = Map.put(expense_params, "category_id", category_id)
+
+    remaining_budget =
+      socket.assigns.category_data.category.monthly_budget -
+        socket.assigns.category_data.total_expenses_current_month
+
+    changeset =
+      socket.assigns.expense
+      |> ExpenseForm.changeset(
+        expense_params_with_category,
+        remaining_budget
+      )
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :changeset, changeset)}
   end
 
   @impl true
@@ -145,16 +242,24 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
     <!-- Recent Expenses -->
       <div class="bg-white shadow rounded-lg border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-medium text-gray-900">Recent Expenses</h3>
-          <p class="text-sm text-gray-600">Your 5 most recent expenses in this category</p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Recent Expenses</h3>
+              <p class="text-sm text-gray-600">Your 5 most recent expenses in this category</p>
+            </div>
+            <.button phx-click="new_expense" disabled={@budget_percentage >= 100}>
+              Add Expense
+            </.button>
+          </div>
         </div>
 
         <div :if={Enum.empty?(@category_data.recent_expenses)} class="px-6 py-8 text-center">
           <div class="text-gray-500">
             <h3 class="text-sm font-medium text-gray-900">No expenses yet</h3>
-            <p class="mt-1 text-sm text-gray-500">
+            <p class="mt-1 mb-4 text-sm text-gray-500">
               Start by adding your first expense to this category.
             </p>
+            <.button phx-click="new_expense">Add Your First Expense</.button>
           </div>
         </div>
 
@@ -180,6 +285,43 @@ defmodule ExpenseTrackerWeb.CategoryLive.Show do
           </div>
         </div>
       </div>
+      
+    <!-- Expense Form Modal -->
+      <.modal
+        :if={@live_action == :new_expense}
+        id="expense-modal"
+        show
+        on_cancel={JS.patch(~p"/categories/#{@category_data.category.id}")}
+      >
+        <.header>
+          New Expense for {@category_data.category.name}
+          <:subtitle>Add a new expense to this category</:subtitle>
+        </.header>
+
+        <.simple_form
+          :let={f}
+          for={@changeset}
+          id="expense-form"
+          phx-submit="save"
+          phx-change="validate"
+        >
+          <.input field={f[:amount_input]} label="Amount ($)" required />
+          <.input field={f[:date]} type="date" label="Date" required max={Date.utc_today()} />
+          <.input field={f[:notes]} type="textarea" label="Notes" />
+          <:actions>
+            <.button phx-disable-with="Creating..." disabled={not @changeset.valid?}>
+              Create Expense
+            </.button>
+            <.button
+              type="button"
+              phx-click={JS.patch(~p"/categories/#{@category_data.category.id}")}
+              class="ml-3"
+            >
+              Cancel
+            </.button>
+          </:actions>
+        </.simple_form>
+      </.modal>
     </div>
     """
   end

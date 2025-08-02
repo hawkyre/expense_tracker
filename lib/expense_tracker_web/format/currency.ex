@@ -3,6 +3,8 @@ defmodule ExpenseTrackerWeb.Format.Currency do
   Module for formatting currency amounts.
   """
 
+  alias Decimal, as: D
+
   @doc """
   Formats an amount in cents to a currency string.
 
@@ -14,9 +16,9 @@ defmodule ExpenseTrackerWeb.Format.Currency do
   @spec format_currency(integer(), String.t()) :: String.t()
   def format_currency(amount, currency) do
     amount
-    |> Decimal.new()
-    |> Decimal.div(100)
-    |> Decimal.to_float()
+    |> D.round(2)
+    |> D.div(100)
+    |> D.to_float()
     |> :erlang.float_to_binary(decimals: 2)
     |> format_string(currency)
   end
