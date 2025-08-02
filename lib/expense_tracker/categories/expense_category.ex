@@ -4,11 +4,15 @@ defmodule ExpenseTracker.Categories.ExpenseCategory do
 
   import Ecto.Changeset
 
+  alias ExpenseTracker.Categories.Expense
+
   typed_schema "expense_categories" do
     field :name, :string
     field :description, :string
     field :monthly_budget, :integer
     field :monthly_budget_currency, :string, default: "USD"
+
+    has_many :expenses, Expense, foreign_key: :category_id
 
     timestamps(type: :utc_datetime)
   end
